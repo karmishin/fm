@@ -1,18 +1,12 @@
 package kostygin;
 
 
-import java.awt.GridLayout;
+import java.awt.*;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.List;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTree;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.*;
 import javax.swing.event.TreeModelListener;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
@@ -26,19 +20,22 @@ public class FileExplorer extends JFrame {
     }
 
     private void initComponents() {
-        this.getContentPane().add(new JScrollPane(createFileManagerTree()));
-        this.setSize(500, 500);
+        JSplitPane jSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, new JScrollPane(createFileManagerTree()), new JScrollPane(createFileManagerTree()));
+
+        this.getContentPane().add(jSplitPane);
+
+        this.setSize(1000, 500);
         this.setResizable(true);
-        this.setTitle("File Manager..");
+        this.setTitle("Файловый менеджер");
     }
 
     private JPanel createFileManagerTree() {
         JPanel panel = new JPanel();
         panel.setLayout(new GridLayout());
-
         fileManagerTree = new JTree();
-        fileManagerTree.setModel(new FilesContentProvider("C:\\"));
+        fileManagerTree.setModel(new FilesContentProvider("/"));
         panel.add(fileManagerTree);
+
         return panel;
     }
 
