@@ -32,7 +32,13 @@ public class FileExplorer extends JFrame {
         JPanel panel = new JPanel();
         panel.setLayout(new GridLayout());
         fileManagerTree = new JTree();
-        fileManagerTree.setModel(new FilesContentProvider("/"));
+
+        if (System.getProperty("os.name").contains("Win")) {
+            fileManagerTree.setModel(new FilesContentProvider("C:\\"));
+        } else {
+            fileManagerTree.setModel(new FilesContentProvider("/"));
+        }
+
         panel.add(fileManagerTree);
 
         return panel;
