@@ -26,6 +26,7 @@ public class FileExplorer extends JFrame {
         this.setSize(1000, 500);
         this.setResizable(true);
         this.setTitle("Файловый менеджер");
+        this.setDefaultCloseOperation(EXIT_ON_CLOSE);
     }
 
     private JPanel createFileManagerTree() {
