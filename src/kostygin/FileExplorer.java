@@ -21,9 +21,8 @@ public class FileExplorer extends JFrame {
 
     private void initComponents() {
         JSplitPane jSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, new JScrollPane(createFileManagerTree()), new JScrollPane(createFileManagerTree()));
-
+        jSplitPane.setDividerLocation(500);
         this.getContentPane().add(jSplitPane);
-
         this.setSize(1000, 500);
         this.setResizable(true);
         this.setTitle("Файловый менеджер");
