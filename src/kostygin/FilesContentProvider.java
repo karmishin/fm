@@ -1,6 +1,7 @@
 package kostygin;
 
 import javax.swing.event.TreeModelListener;
+import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 import java.io.File;
@@ -12,7 +13,6 @@ class FilesContentProvider implements TreeModel {
 
     public FilesContentProvider(String path) {
         node = new File(path);
-
     }
 
     @Override
