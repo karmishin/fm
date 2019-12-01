@@ -1,20 +1,20 @@
 package kostygin;
 
 
-import java.awt.*;
-import java.awt.event.*;
-import java.io.File;
-import java.lang.reflect.InvocationTargetException;
 import javax.swing.*;
-import javax.swing.event.TreeModelEvent;
-import javax.swing.event.TreeModelListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
+import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.io.File;
 
 public class Main extends JFrame implements Runnable{
 
-    private JTree fileManagerTree = null;
+    private JTree leftTree = null;
+    private JTree rightTree = null;
     private JLabel label;
 
     private DefaultMutableTreeNode root;
@@ -22,14 +22,17 @@ public class Main extends JFrame implements Runnable{
 
     @Override
     public void run() {
-        JScrollPane leftTree = new JScrollPane(createFileManagerTree());
-        JScrollPane rightTree = new JScrollPane(createFileManagerTree());
+        JScrollPane leftPane = new JScrollPane(createFileManagerTree(leftTree));
+        JScrollPane rightPane = new JScrollPane(createFileManagerTree(rightTree));
 
         JPanel pane = new JPanel();
         pane.setLayout(new GridBagLayout());
         GridBagConstraints c = new GridBagConstraints();
 
-        JSplitPane jSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftTree, rightTree);
+        JSplitPane jSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+        jSplitPane.setLeftComponent(leftPane);
+        jSplitPane.setRightComponent(rightPane);
+
         jSplitPane.setDividerLocation(500);
         c.fill = GridBagConstraints.BOTH;
         c.gridx = 0;
@@ -66,7 +69,7 @@ public class Main extends JFrame implements Runnable{
     }
 
 
-    private JPanel createFileManagerTree() {
+    private JPanel createFileManagerTree(JTree fileManagerTree) {
         JPanel panel = new JPanel();
         panel.setLayout(new GridLayout());
 
@@ -82,12 +85,13 @@ public class Main extends JFrame implements Runnable{
         new Thread(childNodesAdder).start();
 
 
+        JTree finalFileManagerTree = fileManagerTree;
         MouseListener ml = new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                int selectedRow = fileManagerTree.getRowForLocation(e.getX(), e.getY());
+                int selectedRow = finalFileManagerTree.getRowForLocation(e.getX(), e.getY());
                 if (selectedRow != -1) {
-                TreePath selectedPath = fileManagerTree.getPathForLocation(e.getX(), e.getY());
+                TreePath selectedPath = finalFileManagerTree.getPathForLocation(e.getX(), e.getY());
                 String fileName = selectedPath.getLastPathComponent().toString();
 
                 String filePath = getFullPath(selectedPath);
