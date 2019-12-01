@@ -1,33 +1,27 @@
 package kostygin;
 
 
-import com.sun.source.tree.Tree;
-
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
-import java.nio.file.*;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import javax.swing.*;
+import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 
-public class FileExplorer extends JFrame {
+public class Main extends JFrame implements Runnable{
 
     private JTree fileManagerTree = null;
     private JLabel label;
 
-    public FileExplorer() {
-        initComponents();
-    }
+    private DefaultMutableTreeNode root;
+    private DefaultTreeModel treeModel;
 
-    private void initComponents() {
+    @Override
+    public void run() {
         JScrollPane leftTree = new JScrollPane(createFileManagerTree());
         JScrollPane rightTree = new JScrollPane(createFileManagerTree());
 
@@ -58,57 +52,79 @@ public class FileExplorer extends JFrame {
         this.setResizable(false);
         this.setTitle("Файловый менеджер");
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
+        this.setVisible(true);
     }
+
+    public String getFullPath(TreePath selectedPath) {
+        StringBuilder sb = new StringBuilder();
+        Object[] nodes = selectedPath.getPath();
+        for (int i = 0; i < nodes.length; i++) {
+            sb.append(File.separatorChar).append(nodes[i].toString());
+        }
+
+        return sb.toString();
+    }
+
 
     private JPanel createFileManagerTree() {
         JPanel panel = new JPanel();
         panel.setLayout(new GridLayout());
 
-        fileManagerTree = new JTree();
+        File fileRoot = new File("/home");
+        root = new DefaultMutableTreeNode(new FileNode(fileRoot));
+        treeModel = new DefaultTreeModel(root);
 
-        if (System.getProperty("os.name").contains("Win")) {
-            fileManagerTree.setModel( new FilesContentProvider("C:\\"));
-        } else {
-            fileManagerTree.setModel(new FilesContentProvider("/"));
-        }
+        fileManagerTree = new JTree(treeModel);
+        fileManagerTree.setEditable(true);
+        fileManagerTree.setShowsRootHandles(true);
+
+        ChildNodesAdder childNodesAdder = new ChildNodesAdder(fileRoot, root);
+        new Thread(childNodesAdder).start();
+
 
         MouseListener ml = new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
                 int selectedRow = fileManagerTree.getRowForLocation(e.getX(), e.getY());
+                if (selectedRow != -1) {
                 TreePath selectedPath = fileManagerTree.getPathForLocation(e.getX(), e.getY());
-                String filePath = selectedPath.getLastPathComponent().toString();
+                String fileName = selectedPath.getLastPathComponent().toString();
 
-                if(selectedRow != -1) {
-                    if(e.getClickCount() == 2) {
-                        FileEditDialog fileEditDialog = new FileEditDialog(filePath);
+                String filePath = getFullPath(selectedPath);
+
+
+                    if (e.getClickCount() == 1) {
+                        FileEditDialog fileEditDialog = new FileEditDialog(fileName);
 
                         int result = JOptionPane.showConfirmDialog(panel, fileEditDialog,
                                 "Изменение параметров файла", JOptionPane.DEFAULT_OPTION);
                         if (result == JOptionPane.OK_OPTION) {
                             File oldFile = new File(filePath);
-                            File newFile = new File(fileEditDialog.getFileName());
+                            String newFilePath = oldFile.getParentFile().getAbsolutePath() + "/" + fileEditDialog.getFileName();
+                            File newFile = new File(newFilePath);
                             boolean success = oldFile.renameTo(newFile);
                             if (success) {
-                                fileManagerTree.startEditingAtPath(selectedPath);
+                                treeModel.valueForPathChanged(selectedPath, fileEditDialog.getFileName());
                             } else {
                                 JOptionPane.showMessageDialog(fileEditDialog, "Произошла ошибка!");
                             }
+
+
                         }
                     }
                 }
             }
         };
+
+
         fileManagerTree.addMouseListener(ml);
+
         panel.add(fileManagerTree);
 
         return panel;
     }
 
-    public static void main(String[] args) throws InvocationTargetException, InterruptedException,
-            ClassNotFoundException, InstantiationException, IllegalAccessException, UnsupportedLookAndFeelException {
-        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        FileExplorer explorerUI = new FileExplorer();
-        SwingUtilities.invokeAndWait(() -> explorerUI.setVisible(true));
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(new Main());
     }
 }
