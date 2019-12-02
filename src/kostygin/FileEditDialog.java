@@ -52,6 +52,27 @@ public class FileEditDialog extends JPanel {
         if (attributesManager.checkIfExecutable()) {
             executeCheckBox.setSelected(true);
         }
+    }
 
+    public void checkUserPermissions() throws IOException {
+        if (readCheckBox.isSelected()) {
+            attributesManager.setReadable(true);
+        } else {
+            attributesManager.setReadable(false);
+        }
+
+        if (writeCheckBox.isSelected()) {
+            attributesManager.setWritable(true);
+        } else {
+            attributesManager.setReadable(false);
+        }
+
+        if (executeCheckBox.isSelected()) {
+            attributesManager.setExecutable(true);
+        } else {
+            attributesManager.setExecutable(false);
+        }
+
+        attributesManager.setPermissions();
     }
 }

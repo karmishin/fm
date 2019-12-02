@@ -10,6 +10,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
+import java.io.IOException;
 
 public class Main extends JFrame implements Runnable{
 
@@ -102,11 +103,18 @@ public class Main extends JFrame implements Runnable{
                         int result = JOptionPane.showConfirmDialog(panel, fileEditDialog,
                                 "Изменение параметров файла", JOptionPane.DEFAULT_OPTION);
                         if (result == JOptionPane.OK_OPTION) {
+                            try {
+                                fileEditDialog.checkUserPermissions();
+                            } catch (IOException ioException) {
+                                JOptionPane.showMessageDialog(fileEditDialog, ioException.toString());
+                            }
                             String newFilePath = selectedFile.getParentFile().getAbsolutePath() + "/" + fileEditDialog.getFileName();
                             File newFile = new File(newFilePath);
                             boolean success = selectedFile.renameTo(newFile);
+
                             if (success) {
                                 treeModel.valueForPathChanged(selectedPath, fileEditDialog.getFileName());
+
                             } else {
                                 JOptionPane.showMessageDialog(fileEditDialog, "Произошла ошибка!");
                             }
