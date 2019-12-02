@@ -78,7 +78,7 @@ public class Main extends JFrame implements Runnable{
         treeModel = new DefaultTreeModel(root);
 
         fileManagerTree = new JTree(treeModel);
-        fileManagerTree.setEditable(true);
+        fileManagerTree.setEditable(false);
         fileManagerTree.setShowsRootHandles(true);
 
         ChildNodesAdder childNodesAdder = new ChildNodesAdder(fileRoot, root);
