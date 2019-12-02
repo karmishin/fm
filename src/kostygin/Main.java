@@ -91,22 +91,20 @@ public class Main extends JFrame implements Runnable{
             public void mousePressed(MouseEvent e) {
                 int selectedRow = finalFileManagerTree.getRowForLocation(e.getX(), e.getY());
                 if (selectedRow != -1) {
-                TreePath selectedPath = finalFileManagerTree.getPathForLocation(e.getX(), e.getY());
-                String fileName = selectedPath.getLastPathComponent().toString();
-
-                String filePath = getFullPath(selectedPath);
-
+                    TreePath selectedPath = finalFileManagerTree.getPathForLocation(e.getX(), e.getY());
+                    String fileName = selectedPath.getLastPathComponent().toString();
+                    String filePath = getFullPath(selectedPath);
+                    File selectedFile = new File(filePath);
 
                     if (e.getClickCount() == 1) {
-                        FileEditDialog fileEditDialog = new FileEditDialog(fileName);
+                        FileEditDialog fileEditDialog = new FileEditDialog(selectedFile);
 
                         int result = JOptionPane.showConfirmDialog(panel, fileEditDialog,
                                 "Изменение параметров файла", JOptionPane.DEFAULT_OPTION);
                         if (result == JOptionPane.OK_OPTION) {
-                            File oldFile = new File(filePath);
-                            String newFilePath = oldFile.getParentFile().getAbsolutePath() + "/" + fileEditDialog.getFileName();
+                            String newFilePath = selectedFile.getParentFile().getAbsolutePath() + "/" + fileEditDialog.getFileName();
                             File newFile = new File(newFilePath);
-                            boolean success = oldFile.renameTo(newFile);
+                            boolean success = selectedFile.renameTo(newFile);
                             if (success) {
                                 treeModel.valueForPathChanged(selectedPath, fileEditDialog.getFileName());
                             } else {
