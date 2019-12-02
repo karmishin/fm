@@ -1,6 +1,5 @@
 package kostygin;
 
-import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -11,14 +10,29 @@ import java.util.Set;
 
 public class AttributesManager {
 
-    Set<PosixFilePermission> permissionSet = new HashSet<>();
+    private File file;
+    private Set<PosixFilePermission> permissionSet = new HashSet<>();
+    private Set<PosixFilePermission> modifiedPermissionSet = new HashSet<>();
 
-    public AttributesManager(File file) {
-        try {
-            permissionSet = Files.getPosixFilePermissions(Paths.get(file.getPath()));
-        } catch (IOException e) {
-            JOptionPane.showMessageDialog(null, e.toString());
-        }
+    public AttributesManager(File file) throws IOException {
+        this.file = file;
+        this.permissionSet = Files.getPosixFilePermissions(Paths.get(file.getPath()));
+    }
+
+    public boolean checkIfReadable() {
+        return permissionSet.contains(PosixFilePermission.OWNER_READ);
+    }
+
+    public boolean checkIfWritable() {
+        return permissionSet.contains(PosixFilePermission.OWNER_WRITE);
+    }
+
+    public boolean checkIfExecutable() {
+        return permissionSet.contains(PosixFilePermission.OWNER_EXECUTE);
+    }
+
+    public void setPermissions() throws IOException {
+        Files.setPosixFilePermissions(Paths.get(file.getPath()), modifiedPermissionSet);
     }
 
 }

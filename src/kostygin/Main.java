@@ -111,7 +111,6 @@ public class Main extends JFrame implements Runnable{
                                 JOptionPane.showMessageDialog(fileEditDialog, "Произошла ошибка!");
                             }
 
-
                         }
                     }
                 }
