@@ -13,6 +13,7 @@ public class FileEditDialog extends JPanel {
     private JCheckBox executeCheckBox;
 
     public FileEditDialog(File file) {
+
         try {
             attributesManager = new AttributesManager(file);
         } catch (IOException e) {

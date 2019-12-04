@@ -14,17 +14,24 @@ import java.io.IOException;
 
 public class Main extends JFrame implements Runnable{
 
-    private JTree leftTree = null;
-    private JTree rightTree = null;
+    private JScrollPane leftPane, rightPane;
     private JLabel label;
 
     private DefaultMutableTreeNode root;
+    private File fileRoot;
     private DefaultTreeModel treeModel;
 
     @Override
     public void run() {
-        JScrollPane leftPane = new JScrollPane(createFileManagerTree(leftTree));
-        JScrollPane rightPane = new JScrollPane(createFileManagerTree(rightTree));
+        fileRoot = new File(System.getProperty("user.home"));
+        root = new DefaultMutableTreeNode(new FileNode(fileRoot));
+        treeModel = new DefaultTreeModel(root);
+
+        ChildNodesAdder childNodesAdder = new ChildNodesAdder(fileRoot, root);
+        new Thread(childNodesAdder).start();
+
+        leftPane = new JScrollPane(createFileManagerTree());
+        rightPane = new JScrollPane(createFileManagerTree());
 
         JPanel pane = new JPanel();
         pane.setLayout(new GridBagLayout());
@@ -53,7 +60,7 @@ public class Main extends JFrame implements Runnable{
 
         this.getContentPane().add(pane);
         this.setSize(1000, 500);
-        this.setResizable(false);
+        this.setResizable(true);
         this.setTitle("Файловый менеджер");
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         this.setVisible(true);
@@ -70,21 +77,14 @@ public class Main extends JFrame implements Runnable{
     }
 
 
-    private JPanel createFileManagerTree(JTree fileManagerTree) {
+    private JPanel createFileManagerTree() {
         JPanel panel = new JPanel();
         panel.setLayout(new GridLayout());
 
-        File fileRoot = new File("/home");
-        root = new DefaultMutableTreeNode(new FileNode(fileRoot));
-        treeModel = new DefaultTreeModel(root);
+        JTree fileManagerTree = new JTree(treeModel);
 
-        fileManagerTree = new JTree(treeModel);
         fileManagerTree.setEditable(false);
         fileManagerTree.setShowsRootHandles(true);
-
-        ChildNodesAdder childNodesAdder = new ChildNodesAdder(fileRoot, root);
-        new Thread(childNodesAdder).start();
-
 
         JTree finalFileManagerTree = fileManagerTree;
         MouseListener ml = new MouseAdapter() {
@@ -94,7 +94,7 @@ public class Main extends JFrame implements Runnable{
                 if (selectedRow != -1) {
                     TreePath selectedPath = finalFileManagerTree.getPathForLocation(e.getX(), e.getY());
                     String fileName = selectedPath.getLastPathComponent().toString();
-                    String filePath = getFullPath(selectedPath);
+                    String filePath = fileRoot.getParent() + getFullPath(selectedPath);
                     File selectedFile = new File(filePath);
 
                     if (e.getClickCount() == 1) {
@@ -103,20 +103,21 @@ public class Main extends JFrame implements Runnable{
                         int result = JOptionPane.showConfirmDialog(panel, fileEditDialog,
                                 "Изменение параметров файла", JOptionPane.DEFAULT_OPTION);
                         if (result == JOptionPane.OK_OPTION) {
+                            String newFilePath = null;
                             try {
                                 fileEditDialog.checkUserPermissions();
+                                newFilePath = selectedFile.getParentFile().getPath() + "/" + fileEditDialog.getFileName();
+
                             } catch (IOException ioException) {
                                 JOptionPane.showMessageDialog(fileEditDialog, ioException.toString());
                             }
-                            String newFilePath = selectedFile.getParentFile().getAbsolutePath() + "/" + fileEditDialog.getFileName();
                             File newFile = new File(newFilePath);
                             boolean success = selectedFile.renameTo(newFile);
 
                             if (success) {
                                 treeModel.valueForPathChanged(selectedPath, fileEditDialog.getFileName());
-
                             } else {
-                                JOptionPane.showMessageDialog(fileEditDialog, "Произошла ошибка!");
+                                JOptionPane.showMessageDialog(fileEditDialog, "Произошла неизвестная ошибка!");
                             }
 
                         }

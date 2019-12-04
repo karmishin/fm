@@ -2,6 +2,7 @@ package kostygin;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.io.File;
+import java.io.FileFilter;
 
 public class ChildNodesAdder implements Runnable{
     private DefaultMutableTreeNode root;
@@ -13,7 +14,12 @@ public class ChildNodesAdder implements Runnable{
     }
 
     private void createChildren(File fileRoot, DefaultMutableTreeNode node) {
-        File[] files = fileRoot.listFiles();
+        File[] files = fileRoot.listFiles(new FileFilter() {
+            @Override
+            public boolean accept(File file) {
+                return !file.isHidden();
+            }
+        });
         if (files == null ) {
             return;
         }
@@ -21,10 +27,6 @@ public class ChildNodesAdder implements Runnable{
         for (File file : files) {
             DefaultMutableTreeNode childNode = new DefaultMutableTreeNode(new FileNode(file));
             node.add(childNode);
-
-            if (file.getName().startsWith(".")) {
-                continue;
-            }
 
             if (file.isDirectory()) {
                 createChildren(file, childNode);
