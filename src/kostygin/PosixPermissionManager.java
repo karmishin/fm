@@ -8,13 +8,13 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.Set;
 
-public class AttributesManager {
+public class PosixPermissionManager {
 
     private File file;
     private Path filePath;
     private Set<PosixFilePermission> permissionSet;
 
-    public AttributesManager(File file) throws IOException {
+    public PosixPermissionManager(File file) throws IOException {
         this.file = file;
         this.filePath = Paths.get(file.getPath());
         this.permissionSet = Files.getPosixFilePermissions(filePath);

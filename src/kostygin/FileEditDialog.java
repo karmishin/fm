@@ -5,7 +5,7 @@ import java.io.File;
 import java.io.IOException;
 
 public class FileEditDialog extends JPanel {
-    AttributesManager attributesManager = null;
+    PosixPermissionManager attributesManager = null;
 
     private JTextField fileNameField;
     private JCheckBox readCheckBox;
@@ -15,7 +15,7 @@ public class FileEditDialog extends JPanel {
     public FileEditDialog(File file) {
 
         try {
-            attributesManager = new AttributesManager(file);
+            attributesManager = new PosixPermissionManager(file);
         } catch (IOException e) {
             JOptionPane.showMessageDialog(this, e.toString());
         }

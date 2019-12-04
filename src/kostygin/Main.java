@@ -10,8 +10,9 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
+import java.io.IOException;
 
-public class Main extends JFrame implements Runnable{
+public class Main extends JFrame implements Runnable {
 
     private JScrollPane leftPane, rightPane;
     private JLabel label;
@@ -44,6 +45,9 @@ public class Main extends JFrame implements Runnable{
         JMenu fileMenu = new JMenu("Файл");
         menuBar.add(fileMenu);
         JMenu editMenu = new JMenu("Изменить");
+        JMenuItem editFile = new JMenuItem("Изменить выбранный файл");
+        editFile.addActionListener(e -> rename());
+        editMenu.add(editFile);
         menuBar.add(editMenu);
         JMenu viewMenu = new JMenu("Вид");
         menuBar.add(viewMenu);
@@ -65,7 +69,7 @@ public class Main extends JFrame implements Runnable{
         c.weighty = 1;
         pane.add(jSplitPane, c);
 
-        label = new JLabel("Чтобы изменить параметры файла, нажмите на него");
+        label = new JLabel(":)");
         label.setHorizontalAlignment(JLabel.CENTER);
 
         c.gridx = 0;
@@ -92,6 +96,52 @@ public class Main extends JFrame implements Runnable{
 
         selectedTree.addMouseListener(ml);
     }
+
+    public TreePath getSelectedNode() {
+        if (tree1.getSelectionPath() != null) {
+            return tree1.getSelectionPath();
+        } else if (tree2.getSelectionPath() != null) {
+            return tree2.getSelectionPath();
+        }
+
+        return null;
+    }
+
+    public void rename() {
+        TreePath selectedNodePath = getSelectedNode();
+
+        if (selectedNodePath != null) {
+            String fileName = selectedNodePath.getLastPathComponent().toString();
+            String filePath = fileRoot.getParent() + getFullPath(selectedNodePath);
+            File selectedFile = new File(filePath);
+
+            FileEditDialog fileEditDialog = new FileEditDialog(selectedFile);
+
+            int result = JOptionPane.showConfirmDialog(null, fileEditDialog,
+                    "Изменение параметров файла", JOptionPane.DEFAULT_OPTION);
+            if (result == JOptionPane.OK_OPTION) {
+                String newFilePath = null;
+                try {
+                    fileEditDialog.checkUserPermissions();
+                    newFilePath = selectedFile.getParentFile().getPath() + "/" + fileEditDialog.getFileName();
+
+                } catch (IOException ioException) {
+                    JOptionPane.showMessageDialog(fileEditDialog, ioException.toString());
+                }
+                File newFile = new File(newFilePath);
+                boolean success = selectedFile.renameTo(newFile);
+
+                if (success) {
+                    treeModel.valueForPathChanged(selectedNodePath, fileEditDialog.getFileName());
+                } else {
+                    JOptionPane.showMessageDialog(fileEditDialog, "Произошла неизвестная ошибка!");
+                }
+
+            }
+
+        }
+    }
+
 
     public String getFullPath(TreePath selectedPath) {
         StringBuilder sb = new StringBuilder();
