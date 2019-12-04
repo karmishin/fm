@@ -123,8 +123,7 @@ public class Main extends JFrame implements Runnable {
                 String newFilePath = null;
                 try {
                     fileEditDialog.checkUserPermissions();
-                    newFilePath = selectedFile.getParentFile().getPath() + "/" + fileEditDialog.getFileName();
-
+                    newFilePath = selectedFile.getParentFile().getPath() + File.separator + fileEditDialog.getFileName();
                 } catch (IOException ioException) {
                     JOptionPane.showMessageDialog(fileEditDialog, ioException.toString());
                 }
@@ -136,9 +135,7 @@ public class Main extends JFrame implements Runnable {
                 } else {
                     JOptionPane.showMessageDialog(fileEditDialog, "Произошла неизвестная ошибка!");
                 }
-
             }
-
         }
     }
 
@@ -160,49 +157,6 @@ public class Main extends JFrame implements Runnable {
         fileManagerTree.setModel(treeModel);
         fileManagerTree.setEditable(false);
         fileManagerTree.setShowsRootHandles(true);
-
-        JTree finalFileManagerTree = fileManagerTree;
-        /*MouseListener ml = new MouseAdapter() {
-            @Override
-            public void mousePressed(MouseEvent e) {
-                int selectedRow = finalFileManagerTree.getRowForLocation(e.getX(), e.getY());
-                if (selectedRow != -1) {
-                    TreePath selectedPath = finalFileManagerTree.getPathForLocation(e.getX(), e.getY());
-                    String fileName = selectedPath.getLastPathComponent().toString();
-                    String filePath = fileRoot.getParent() + getFullPath(selectedPath);
-                    File selectedFile = new File(filePath);
-
-                    if (e.getClickCount() == 1) {
-                        FileEditDialog fileEditDialog = new FileEditDialog(selectedFile);
-
-                        int result = JOptionPane.showConfirmDialog(panel, fileEditDialog,
-                                "Изменение параметров файла", JOptionPane.DEFAULT_OPTION);
-                        if (result == JOptionPane.OK_OPTION) {
-                            String newFilePath = null;
-                            try {
-                                fileEditDialog.checkUserPermissions();
-                                newFilePath = selectedFile.getParentFile().getPath() + "/" + fileEditDialog.getFileName();
-
-                            } catch (IOException ioException) {
-                                JOptionPane.showMessageDialog(fileEditDialog, ioException.toString());
-                            }
-                            File newFile = new File(newFilePath);
-                            boolean success = selectedFile.renameTo(newFile);
-
-                            if (success) {
-                                treeModel.valueForPathChanged(selectedPath, fileEditDialog.getFileName());
-                            } else {
-                                JOptionPane.showMessageDialog(fileEditDialog, "Произошла неизвестная ошибка!");
-                            }
-
-                        }
-                    }
-                }
-            }
-        };
-
-
-        fileManagerTree.addMouseListener(ml);*/
 
         panel.add(fileManagerTree);
 

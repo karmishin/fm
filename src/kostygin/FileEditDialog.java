@@ -5,17 +5,32 @@ import java.io.File;
 import java.io.IOException;
 
 public class FileEditDialog extends JPanel {
-    PosixPermissionManager attributesManager = null;
+    DosPermissionManager dosPermissionManager = null;
+    PosixPermissionManager posixPermissionManager = null;
+
+    boolean isWindows = false;
 
     private JTextField fileNameField;
-    private JCheckBox readCheckBox;
-    private JCheckBox writeCheckBox;
-    private JCheckBox executeCheckBox;
+    private JCheckBox firstCheckbox;
+    private JCheckBox secondCheckbox;
+    private JCheckBox thirdCheckbox;
 
     public FileEditDialog(File file) {
 
         try {
-            attributesManager = new PosixPermissionManager(file);
+            if (System.getProperty("os.name").toLowerCase().contains("win")) {
+                isWindows = true;
+                dosPermissionManager = new DosPermissionManager(file);
+                firstCheckbox = new JCheckBox("Только для чтения");
+                secondCheckbox = new JCheckBox("Скрытый файл");
+                thirdCheckbox = new JCheckBox("Системный файл");
+            } else {
+                posixPermissionManager = new PosixPermissionManager(file);
+                firstCheckbox = new JCheckBox("Разрешить чтение");
+                secondCheckbox = new JCheckBox("Разрешить запись");
+                thirdCheckbox = new JCheckBox("Разрешить исполнение");
+            }
+
         } catch (IOException e) {
             JOptionPane.showMessageDialog(this, e.toString());
         }
@@ -25,16 +40,12 @@ public class FileEditDialog extends JPanel {
         fileNameField = new JTextField(14);
         fileNameField.setText(file.getName());
 
-        readCheckBox = new JCheckBox("Разрешить чтение");
-        writeCheckBox = new JCheckBox("Разрешить запись");
-        executeCheckBox = new JCheckBox("Разрешить исполнение");
-
         setCheckBoxes();
 
         add(this.fileNameField);
-        add(this.readCheckBox);
-        add(this.writeCheckBox);
-        add(this.executeCheckBox);
+        add(this.firstCheckbox);
+        add(this.secondCheckbox);
+        add(this.thirdCheckbox);
     }
 
     public String getFileName() {
@@ -42,38 +53,77 @@ public class FileEditDialog extends JPanel {
     }
 
     private void setCheckBoxes() {
-        if (attributesManager.checkIfReadable()) {
-            readCheckBox.setSelected(true);
-        }
+        if (isWindows) {
+            if (dosPermissionManager.checkIfReadOnly()) {
+                firstCheckbox.setSelected(true);
+            }
 
-        if (attributesManager.checkIfWritable()) {
-            writeCheckBox.setSelected(true);
-        }
+            if (dosPermissionManager.checkIfHidden()) {
+                secondCheckbox.setSelected(true);
+            }
 
-        if (attributesManager.checkIfExecutable()) {
-            executeCheckBox.setSelected(true);
+            if (dosPermissionManager.checkIfSystem()) {
+                thirdCheckbox.setSelected(true);
+            }
+
+        } else {
+            if (posixPermissionManager.checkIfReadable()) {
+                firstCheckbox.setSelected(true);
+            }
+
+            if (posixPermissionManager.checkIfWritable()) {
+                secondCheckbox.setSelected(true);
+            }
+
+            if (posixPermissionManager.checkIfExecutable()) {
+                thirdCheckbox.setSelected(true);
+            }
         }
     }
 
     public void checkUserPermissions() throws IOException {
-        if (readCheckBox.isSelected()) {
-            attributesManager.setReadable(true);
-        } else {
-            attributesManager.setReadable(false);
-        }
+        if (isWindows) {
 
-        if (writeCheckBox.isSelected()) {
-            attributesManager.setWritable(true);
-        } else {
-            attributesManager.setReadable(false);
-        }
+            if (firstCheckbox.isSelected()) {
+                dosPermissionManager.setReadOnly(true);
+            } else {
+                dosPermissionManager.setReadOnly(false);
+            }
 
-        if (executeCheckBox.isSelected()) {
-            attributesManager.setExecutable(true);
-        } else {
-            attributesManager.setExecutable(false);
-        }
+            if (secondCheckbox.isSelected()) {
+                dosPermissionManager.setHidden(true);
+            } else {
+                dosPermissionManager.setHidden(false);
+            }
 
-        attributesManager.setPermissions();
+            if (thirdCheckbox.isSelected()) {
+                dosPermissionManager.setSystem(true);
+            } else {
+                dosPermissionManager.setSystem(false);
+            }
+
+        } else {
+
+            if (firstCheckbox.isSelected()) {
+                posixPermissionManager.setReadable(true);
+            } else {
+                posixPermissionManager.setReadable(false);
+            }
+
+            if (secondCheckbox.isSelected()) {
+                posixPermissionManager.setWritable(true);
+            } else {
+                posixPermissionManager.setReadable(false);
+            }
+
+            if (thirdCheckbox.isSelected()) {
+                posixPermissionManager.setExecutable(true);
+            } else {
+                posixPermissionManager.setExecutable(false);
+            }
+
+            posixPermissionManager.setPermissions();
+
+        }
     }
 }
