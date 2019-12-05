@@ -43,12 +43,32 @@ public class Main extends JFrame implements Runnable {
 
         JMenuBar menuBar = new JMenuBar();
         JMenu fileMenu = new JMenu("Файл");
+        JMenuItem createFile = new JMenuItem("Создать файл");
+        createFile.addActionListener(e -> {
+            try {
+                createFile(false);
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(null, ex.toString());
+            }
+        });
+        fileMenu.add(createFile);
+        JMenuItem createDirectory = new JMenuItem("Создать папку");
+        createDirectory.addActionListener(e -> {
+            try {
+                createFile(true);
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(null, ex.toString());
+            }
+        });
+        fileMenu.add(createDirectory);
         menuBar.add(fileMenu);
+
         JMenu editMenu = new JMenu("Изменить");
         JMenuItem editFile = new JMenuItem("Изменить выбранный файл");
         editFile.addActionListener(e -> rename());
         editMenu.add(editFile);
         menuBar.add(editMenu);
+
         JMenu viewMenu = new JMenu("Вид");
         menuBar.add(viewMenu);
         c.fill = GridBagConstraints.BOTH;
@@ -106,6 +126,46 @@ public class Main extends JFrame implements Runnable {
 
         return null;
     }
+
+    public File getCreationPath() {
+        TreePath selectedNodePath = getSelectedNode();
+
+        if (selectedNodePath != null) {
+            File selectedFile = new File(fileRoot.getParent() + getFullPath(selectedNodePath));
+
+            if (selectedFile.isDirectory()) {
+                return selectedFile;
+            } else {
+                return selectedFile.getParentFile();
+            }
+        }
+
+        return null;
+    }
+
+    public void createFile(boolean isDirectory) throws IOException {
+        File creationPath = getCreationPath();
+
+        if (creationPath != null) {
+            String newFileName = JOptionPane.showInputDialog("Введите имя нового файла:");
+            File newFile = new File(creationPath + File.separator + newFileName);
+
+            boolean success;
+            if (isDirectory) {
+                success = newFile.mkdirs();
+            } else {
+                success = newFile.createNewFile();
+            }
+
+            treeModel.insertNodeInto(new DefaultMutableTreeNode(newFile.getName()), (DefaultMutableTreeNode) getSelectedNode().getLastPathComponent(), 0);
+
+            if (!success) {
+                JOptionPane.showMessageDialog(null, "Произошла ошибка!");
+            }
+
+        }
+    }
+
 
     public void rename() {
         TreePath selectedNodePath = getSelectedNode();
