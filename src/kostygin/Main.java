@@ -26,7 +26,7 @@ public class Main extends JFrame implements Runnable {
         fileRoot = new File(System.getProperty("user.home"));
         root = new DefaultMutableTreeNode(new FileNode(fileRoot));
         treeModel = new DefaultTreeModel(root);
-        ChildNodesAdder childNodesAdder = new ChildNodesAdder(fileRoot, root);
+        ChildNodesAdder childNodesAdder = new ChildNodesAdder(fileRoot, root, false);
         new Thread(childNodesAdder).start();
         tree1 = new JTree(treeModel);
         tree2 = new JTree(treeModel);
@@ -61,6 +61,9 @@ public class Main extends JFrame implements Runnable {
             }
         });
         fileMenu.add(createDirectory);
+        JMenuItem deleteFile = new JMenuItem("Удалить файл");
+        deleteFile.addActionListener(e -> deleteFile());
+        fileMenu.add(deleteFile);
         menuBar.add(fileMenu);
 
         JMenu editMenu = new JMenu("Изменить");
@@ -70,6 +73,9 @@ public class Main extends JFrame implements Runnable {
         menuBar.add(editMenu);
 
         JMenu viewMenu = new JMenu("Вид");
+        JCheckBoxMenuItem showHiddenFiles = new JCheckBoxMenuItem("Показать скрытые файлы");
+        showHiddenFiles.addActionListener(e -> toggleShowHidden(showHiddenFiles.isSelected()));
+        viewMenu.add(showHiddenFiles);
         menuBar.add(viewMenu);
         c.fill = GridBagConstraints.BOTH;
         c.gridx = 0;
@@ -115,6 +121,17 @@ public class Main extends JFrame implements Runnable {
         };
 
         selectedTree.addMouseListener(ml);
+    }
+
+    public void toggleShowHidden(boolean showHidden) {
+        treeModel.setRoot(null);
+        treeModel.reload();
+        fileRoot = new File(System.getProperty("user.home"));
+        root = new DefaultMutableTreeNode(new FileNode(fileRoot));
+        treeModel.setRoot(root);
+        ChildNodesAdder childNodesAdder = new ChildNodesAdder(fileRoot, root, showHidden);
+        new Thread(childNodesAdder).start();
+        treeModel.reload();
     }
 
     public TreePath getSelectedNode() {
@@ -163,9 +180,27 @@ public class Main extends JFrame implements Runnable {
                 JOptionPane.showMessageDialog(null, "Произошла ошибка!");
             }
 
+        } else {
+            JOptionPane.showMessageDialog(null, "Для начала выберите папку, в которой будет создан файл");
         }
     }
 
+    public void deleteFile() {
+        TreePath selectedNodePath = getSelectedNode();
+
+        if (selectedNodePath != null) {
+            File selectedFile = new File(fileRoot.getParent() + getFullPath(selectedNodePath));
+            boolean success = selectedFile.delete();
+
+            if (success) {
+                treeModel.removeNodeFromParent((DefaultMutableTreeNode) selectedNodePath.getLastPathComponent());
+            } else {
+                JOptionPane.showMessageDialog(null, "Произошла ошибка!");
+            }
+        } else {
+            JOptionPane.showMessageDialog(null, "Для начала выберите удаляемый файл");
+        }
+    }
 
     public void rename() {
         TreePath selectedNodePath = getSelectedNode();
@@ -196,6 +231,8 @@ public class Main extends JFrame implements Runnable {
                     JOptionPane.showMessageDialog(fileEditDialog, "Произошла неизвестная ошибка!");
                 }
             }
+        } else {
+            JOptionPane.showMessageDialog(null, "Для начала выберите переименовываемый файл");
         }
     }
 

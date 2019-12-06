@@ -6,14 +6,23 @@ import java.io.File;
 public class ChildNodesAdder implements Runnable{
     private DefaultMutableTreeNode root;
     private File fileRoot;
+    private boolean showHidden;
+    private File[] files;
 
-    public ChildNodesAdder(File fileRoot, DefaultMutableTreeNode root) {
+    public ChildNodesAdder(File fileRoot, DefaultMutableTreeNode root, boolean showHidden) {
         this.fileRoot = fileRoot;
         this.root = root;
+        this.showHidden = showHidden;
     }
 
     private void createChildren(File fileRoot, DefaultMutableTreeNode node) {
-        File[] files = fileRoot.listFiles(file -> !file.isHidden());
+
+        if (showHidden) {
+            files = fileRoot.listFiles();
+        } else {
+            files = fileRoot.listFiles(file -> !file.isHidden());
+        }
+
         if (files == null ) {
             return;
         }
@@ -28,6 +37,7 @@ public class ChildNodesAdder implements Runnable{
 
         }
     }
+
 
     @Override
     public void run() {
