@@ -1,4 +1,4 @@
-package kostygin;
+package fm;
 
 
 import javax.swing.*;
