@@ -3,7 +3,7 @@ package kostygin;
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.io.File;
 
-public class ChildNodesAdder implements Runnable{
+public class ChildNodesAdder {
     private DefaultMutableTreeNode root;
     private File fileRoot;
     private boolean showHidden;
@@ -15,8 +15,7 @@ public class ChildNodesAdder implements Runnable{
         this.showHidden = showHidden;
     }
 
-    private void createChildren(File fileRoot, DefaultMutableTreeNode node) {
-
+    public void createChildren(File fileRoot, DefaultMutableTreeNode node) {
         if (showHidden) {
             files = fileRoot.listFiles();
         } else {
@@ -36,11 +35,5 @@ public class ChildNodesAdder implements Runnable{
             }
 
         }
-    }
-
-
-    @Override
-    public void run() {
-        createChildren(fileRoot, root);
     }
 }

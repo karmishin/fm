@@ -11,6 +11,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 
 public class Main extends JFrame implements Runnable {
 
@@ -20,6 +21,8 @@ public class Main extends JFrame implements Runnable {
     private DefaultMutableTreeNode root;
     private File fileRoot;
     private DefaultTreeModel treeModel;
+    private JPanel pane;
+    private GridBagConstraints c;
 
     @Override
     public void run() {
@@ -27,7 +30,7 @@ public class Main extends JFrame implements Runnable {
         root = new DefaultMutableTreeNode(new FileNode(fileRoot));
         treeModel = new DefaultTreeModel(root);
         ChildNodesAdder childNodesAdder = new ChildNodesAdder(fileRoot, root, false);
-        new Thread(childNodesAdder).start();
+        childNodesAdder.createChildren(fileRoot, root);
         tree1 = new JTree(treeModel);
         tree2 = new JTree(treeModel);
 
@@ -37,10 +40,41 @@ public class Main extends JFrame implements Runnable {
         leftPane = new JScrollPane(createFileManagerTree(tree1));
         rightPane = new JScrollPane(createFileManagerTree(tree2));
 
-        JPanel pane = new JPanel();
+        pane = new JPanel();
         pane.setLayout(new GridBagLayout());
-        GridBagConstraints c = new GridBagConstraints();
+        c = new GridBagConstraints();
 
+        createMenu();
+
+        JSplitPane jSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+        jSplitPane.setLeftComponent(leftPane);
+        jSplitPane.setRightComponent(rightPane);
+        jSplitPane.setDividerLocation(500);
+        c.fill = GridBagConstraints.BOTH;
+        c.gridx = 0;
+        c.gridy = 1;
+        c.weightx = 1;
+        c.weighty = 1;
+        pane.add(jSplitPane, c);
+
+        label = new JLabel(":)");
+        label.setHorizontalAlignment(JLabel.CENTER);
+
+        c.gridx = 0;
+        c.gridy = 2;
+        c.weightx = 1;
+        c.weighty = 0;
+        pane.add(label, c);
+
+        this.getContentPane().add(pane);
+        this.setSize(1000, 500);
+        this.setResizable(true);
+        this.setTitle("Файловый менеджер");
+        this.setDefaultCloseOperation(EXIT_ON_CLOSE);
+        this.setVisible(true);
+    }
+
+    public void createMenu() {
         JMenuBar menuBar = new JMenuBar();
         JMenu fileMenu = new JMenu("Файл");
         JMenuItem createFile = new JMenuItem("Создать файл");
@@ -74,6 +108,7 @@ public class Main extends JFrame implements Runnable {
 
         JMenu viewMenu = new JMenu("Вид");
         JCheckBoxMenuItem showHiddenFiles = new JCheckBoxMenuItem("Показать скрытые файлы");
+        showHiddenFiles.setEnabled(false); // TODO
         showHiddenFiles.addActionListener(e -> toggleShowHidden(showHiddenFiles.isSelected()));
         viewMenu.add(showHiddenFiles);
         menuBar.add(viewMenu);
@@ -83,33 +118,6 @@ public class Main extends JFrame implements Runnable {
         c.weightx = 1;
         c.weighty = 0;
         pane.add(menuBar, c);
-
-        JSplitPane jSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-        jSplitPane.setLeftComponent(leftPane);
-        jSplitPane.setRightComponent(rightPane);
-        jSplitPane.setDividerLocation(500);
-        c.fill = GridBagConstraints.BOTH;
-        c.gridx = 0;
-        c.gridy = 1;
-        c.weightx = 1;
-        c.weighty = 1;
-        pane.add(jSplitPane, c);
-
-        label = new JLabel(":)");
-        label.setHorizontalAlignment(JLabel.CENTER);
-
-        c.gridx = 0;
-        c.gridy = 2;
-        c.weightx = 1;
-        c.weighty = 0;
-        pane.add(label, c);
-
-        this.getContentPane().add(pane);
-        this.setSize(1000, 500);
-        this.setResizable(true);
-        this.setTitle("Файловый менеджер");
-        this.setDefaultCloseOperation(EXIT_ON_CLOSE);
-        this.setVisible(true);
     }
 
     public void deselectTree(JTree tree, JTree selectedTree) {
@@ -130,7 +138,7 @@ public class Main extends JFrame implements Runnable {
         root = new DefaultMutableTreeNode(new FileNode(fileRoot));
         treeModel.setRoot(root);
         ChildNodesAdder childNodesAdder = new ChildNodesAdder(fileRoot, root, showHidden);
-        new Thread(childNodesAdder).start();
+        childNodesAdder.createChildren(fileRoot, root);
         treeModel.reload();
     }
 
@@ -260,7 +268,7 @@ public class Main extends JFrame implements Runnable {
         return panel;
     }
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(new Main());
+    public static void main(String[] args) throws InvocationTargetException, InterruptedException {
+        SwingUtilities.invokeAndWait(new Main());
     }
 }
